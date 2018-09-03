@@ -11,18 +11,24 @@
   [stretchable<%> interface?]
   [hr% (and/c (subclass?/c snip%) (implementation?/c stretchable<%>))]
   [stretchable-snip-mixin snip-mixin-contract]
-  [stretchable-snip-static-mixin ((object? dimension-integer? dimension-integer? . -> . any) . -> . snip-mixin-contract)])
+  [stretchable-snip-static-mixin ((object? dimension-integer? dimension-integer? . -> . any) . -> . snip-mixin-contract)]
+  [canvas-client-size ((object/c editor-canvas%) . -> . (values dimension-integer? dimension-integer?))])
 
+(define (canvas-client-size ed)
+  (define-values (cl-w cl-h) (send ed get-client-size))
+  (values (- cl-w (* 2 (send ed horizontal-inset)) 3)
+          (- cl-h (* 2 (send ed vertical-inset)) 1)))
 
 (define stretchable-editor-canvas-mixin
   (mixin ((class->interface editor-canvas%)) ()
     (inherit get-editor)
     (super-new)
     (define/override (on-size w h)                              
+      (define-values (cl-w cl-h) (canvas-client-size this))
       (let loop ([sn (send (get-editor) find-first-snip)])
-        (when sn
+        (when sn          
           (when (is-a? sn stretchable<%>)
-            (send sn on-size w h))
+            (send sn on-size cl-w cl-h))
           (loop (send sn next)))))))
 
 (define stretchable-editor-canvas% (stretchable-editor-canvas-mixin editor-canvas%))
@@ -38,28 +44,23 @@
 (define hr%
   (class* image-snip% (stretchable<%>)
     (inherit set-bitmap)
-    (init-field [margin 40])
     (super-make-object (make-object bitmap% 1 1))
     (define/override (set-admin adm)
-      (when adm
-        (define w (box 0))
-        (define h (box 0))
-        (send adm get-view #f #f w h #f)
-        (on-size (unbox w) (unbox h)))
+      (when adm        
+        (define-values (w h) (canvas-client-size (send (send adm get-editor) get-canvas)))
+        (on-size w h))
       (super set-admin adm))
     (define/public (on-size w h)
-      (set-bitmap (draw-line (- w margin))))))
+      (set-bitmap (draw-line w)))))
 
 (define stretchable-snip-mixin
   (mixin ((class->interface snip%)) (stretchable<%>)
     (super-new)
     (init-field [(cb-on-size on-size) (λ (this w h) (void))])
     (define/override (set-admin adm)
-      (when adm
-        (define w (box 0))
-        (define h (box 0))
-        (send adm get-view #f #f w h #f)
-        (on-size (unbox w) (unbox h)))
+       (when adm        
+        (define-values (w h) (canvas-client-size (send (send adm get-editor) get-canvas)))
+        (on-size w h))
       (super set-admin adm))
     (define/public (on-size w h)
       (cb-on-size this w h))))
@@ -68,11 +69,9 @@
   (mixin ((class->interface snip%)) (stretchable<%>)
     (super-new)
     (define/override (set-admin adm)
-      (when adm
-        (define w (box 0))
-        (define h (box 0))
-        (send adm get-view #f #f w h #f)
-        (on-size (unbox w) (unbox h)))
+       (when adm        
+        (define-values (w h) (canvas-client-size (send (send adm get-editor) get-canvas)))
+        (on-size w h))
       (super set-admin adm))
     (define/public (on-size w h)
       (cb-on-size this w h))))
@@ -81,7 +80,7 @@
 (module+ test
   (define hr2% ((stretchable-snip-static-mixin
                  (λ (this w __)
-                   (send this set-bitmap (draw-line (- w 40)))))
+                   (send this set-bitmap (draw-line w))))
                 image-snip%))
   (define hr3% (stretchable-snip-mixin image-snip%))
   (define fr (new frame% [label "test"] [width 400] [height 400]))
@@ -93,6 +92,6 @@
   (send text insert (new hr2%))
   (send text insert "\nline 3\n")
   (send text insert (new hr3% [on-size (λ (this w __)
-                                         (send this set-bitmap (draw-line (- w 40))))]))
+                                         (send this set-bitmap (draw-line w)))]))
   (send text insert "\nline 4")
   (send fr show #t))
