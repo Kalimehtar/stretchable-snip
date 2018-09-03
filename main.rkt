@@ -11,8 +11,8 @@
   [stretchable<%> interface?]
   [hr% (and/c (subclass?/c snip%) (implementation?/c stretchable<%>))]
   [stretchable-snip-mixin snip-mixin-contract]
-  [stretchable-snip-static-mixin (((object/c stretchable<%>) dimension-integer? dimension-integer? . -> . any) . -> . snip-mixin-contract)]
-  [canvas-client-size ((object/c editor-canvas%) . -> . (values dimension-integer? dimension-integer?))])
+  [stretchable-snip-static-mixin (((is-a?/c stretchable<%>) dimension-integer? dimension-integer? . -> . any) . -> . snip-mixin-contract)]
+  [canvas-client-size ((is-a?/c editor-canvas%) . -> . (values dimension-integer? dimension-integer?))])
 
 (define (canvas-client-size ed)
   (define-values (cl-w cl-h) (send ed get-client-size))
