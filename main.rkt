@@ -3,7 +3,7 @@
 
 (define snip-mixin-contract (make-mixin-contract snip%))
 
-(define stretchable<%> (interface () on-size))
+(define stretchable<%> (interface ((class->interface snip%)) on-size))
 
 (provide/contract
   [stretchable-editor-canvas-mixin (make-mixin-contract editor-canvas%)]
@@ -11,7 +11,7 @@
   [stretchable<%> interface?]
   [hr% (and/c (subclass?/c snip%) (implementation?/c stretchable<%>))]
   [stretchable-snip-mixin snip-mixin-contract]
-  [stretchable-snip-static-mixin ((object? dimension-integer? dimension-integer? . -> . any) . -> . snip-mixin-contract)]
+  [stretchable-snip-static-mixin (((object/c stretchable<%>) dimension-integer? dimension-integer? . -> . any) . -> . snip-mixin-contract)]
   [canvas-client-size ((object/c editor-canvas%) . -> . (values dimension-integer? dimension-integer?))])
 
 (define (canvas-client-size ed)
