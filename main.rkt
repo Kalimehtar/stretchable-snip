@@ -47,9 +47,11 @@
     (inherit set-bitmap)
     (super-make-object (make-object bitmap% 1 1))
     (define/override (set-admin adm)
-      (when adm        
-        (define-values (w h) (canvas-client-size (send (send adm get-editor) get-canvas)))
-        (on-size w h))
+      (when adm
+        (define canvas (send (send adm get-editor) get-canvas))
+        (when canvas
+          (define-values (w h) (canvas-client-size ))
+          (on-size w h)))
       (super set-admin adm))
     (define/public (on-size w h)
       (set-bitmap (draw-line w)))))
@@ -59,9 +61,11 @@
     (super-new)
     (init-field [(cb-on-size on-size) (λ (this w h) (void))])
     (define/override (set-admin adm)
-       (when adm        
-        (define-values (w h) (canvas-client-size (send (send adm get-editor) get-canvas)))
-        (on-size w h))
+      (when adm
+        (define canvas (send (send adm get-editor) get-canvas))
+        (when canvas
+          (define-values (w h) (canvas-client-size ))
+          (on-size w h)))
       (super set-admin adm))
     (define/public (on-size w h)
       (cb-on-size this w h))))
@@ -70,9 +74,11 @@
   (mixin ((class->interface snip%)) (stretchable<%>)
     (super-new)
     (define/override (set-admin adm)
-       (when adm        
-        (define-values (w h) (canvas-client-size (send (send adm get-editor) get-canvas)))
-        (on-size w h))
+      (when adm
+        (define canvas (send (send adm get-editor) get-canvas))
+        (when canvas
+          (define-values (w h) (canvas-client-size ))
+          (on-size w h)))
       (super set-admin adm))
     (define/public (on-size w h)
       (cb-on-size this w h))))
