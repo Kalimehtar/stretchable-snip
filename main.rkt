@@ -29,7 +29,8 @@
         (when sn          
           (when (is-a? sn stretchable<%>)
             (send sn on-size cl-w cl-h))
-          (loop (send sn next)))))))
+          (loop (send sn next))))
+      (super on-size w h))))
 
 (define stretchable-editor-canvas% (stretchable-editor-canvas-mixin editor-canvas%))
 
